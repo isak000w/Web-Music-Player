@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Catalog & Player</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <h1>Music Catalog & Player</h1>
+  <nav>
+    <button id="libTab" class="active" onclick="App.show('library')">Library</button>
+    <button id="plTab"            onclick="App.show('playlists')">Playlists</button>
+  </nav>
+  <input id="searchInput" placeholder="Search…" oninput="filterTracks()">
+</header>
+
+<div class="container">
+  <!-- ░░ SIDEBAR ░░ -->
+  <aside id="sidebar">
+    <button id="openUpload" class="primary-btn" onclick="UI.openUploadModal()">Upload</button>
+    <button onclick="UI.scanLibrary()">Scan Library</button>
+
+    <div id="sideCover"  class="cover-placeholder side-cover"></div>
+    <div class="side-meta" id="sideMeta">
+      <div id="sideTitle"  class="side-title"></div>
+      <div id="sideArtist" class="side-artist"></div>
+    </div>
+
+    <div class="side-controls">
+      <button onclick="prevTrack()">⏮</button>
+      <button id="sidePlayPause" class="play-btn" onclick="togglePlay()">▶</button>
+      <button onclick="nextTrack()">⏭</button>
+    </div>
+
+    <div class="side-toggles">
+      <button id="shuffleBtn" class="toggle-btn" onclick="App.toggleShuffle()">🔀</button>
+      <button id="loopBtn"    class="toggle-btn" onclick="toggleLoop()">🔁</button>
+    </div>
+
+    <!-- gear / speed -->
+    <div class="settings">
+      <button id="gearBtn">⚙︎</button>
+      <div id="gearMenu" class="gear-menu">
+        <button id="speedBtn">Speed Modifier</button>
+        <div id="speedPanel">
+          <label><span id="speedVal">1.0×</span>
+          <input id="speedSlider" type="range" min="0.1" max="2" step="0.05" value="1"></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-genius">
+      <button onclick="openArtistSearch()">Artist Info</button>
+      <button onclick="openLyricsSearch()">Lyrics</button>
+    </div>
+
+    <h3>Queue / Up-Next</h3>
+    <div class="queue-box"><ul id="queueList"></ul></div>
+  </aside>
+
+  <!-- ░░ MAIN PANE ░░ -->
+  <div class="main-content">
+    <!-- LIBRARY -->
+    <section id="libraryPanel">
+      <h2>Library <span id="songCount" class="count-badge"></span></h2>
+      <div class="table-responsive">
+        <table class="track-table" id="trackTable">
+          <thead>
+            <tr>
+              <th onclick="sortTable(0,false)">Title</th>
+              <th onclick="sortTable(1,false)">Artist</th>
+              <th onclick="sortTable(2,true)">Duration</th>
+              <th onclick="sortTable(3,true)">Bitrate</th>
+              <th onclick="sortTable(4,false)">Genre</th>
+              <th onclick="sortTable(5,false)">Type</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for t in tracks %}
+            {% set src   = url_for('media', filename=t.filepath) %}
+            {% set cover = url_for('media', filename=t.cover_path) if t.cover_path else '' %}
+            {% set tt    = t.title  |replace("'", "\\'") %}
+            {% set ta    = t.artist |replace("'", "\\'") %}
+            <tr data-src="{{ src }}" data-id="{{ t.id }}">
+              <td>{{ t.title }}</td><td>{{ t.artist }}</td>
+              <td>{{ (t.duration//60)|int }}:{{ '%02d'%(t.duration%60) }}</td>
+              <td>{{ t.bitrate }}</td><td>{{ t.genre }}</td><td>{{ t.extension }}</td>
+              <td class="lib-btns">
+                <button class="play-btn"
+                  onclick="playTrack('{{ src }}','{{ tt }}','{{ ta }}','{{ cover }}',this)">▶</button>
+                <button
+                  onclick="App.addToQueue({src:'{{ src }}',title:'{{ tt }}',artist:'{{ ta }}',cov:'{{ cover }}'})">➕</button>
+                <button class="i-btn"
+                  onclick="PlaylistUI.openChooser('{{ src }}','{{ tt }}','{{ ta }}','{{ cover }}')">ⓘ</button>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PLAYLISTS -->
+    <section id="playlistPanel" hidden>
+      <h2>Playlists</h2>
+      <button id="newPlBtn" class="primary-btn">Create Playlist</button>
+      <div id="playlistList" class="playlist-list"></div>
+
+      <div id="plTracksBox" hidden>
+        <h3 id="plTitle"></h3>
+        <table class="track-table" id="plTrackTable">
+          <thead><tr><th>Title</th><th>Artist</th><th>Duration</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div><!-- /main -->
+</div><!-- /container -->
+
+<footer class="playerbar">
+  <button id="footerPlayPause" class="play-btn" onclick="togglePlay()">▶</button>
+  <input id="progressBar" type="range" min="0" value="0" step="any">
+  <span id="timeDisplay">0:00 / -0:0</span>
+  <canvas id="miniViz" width="90" height="18"></canvas>
+</footer>
+
+<!-- ADD-TO-PLAYLIST chooser -->
+<div id="choosePlModal" class="modal" hidden>
+  <div class="modal-backdrop" onclick="PlaylistUI.closeChooser()"></div>
+  <div class="modal-body choose-body">
+    <h3>Add to playlist</h3>
+    <div id="chooseList" class="choose-list"></div>
+    <button id="chooseNew" class="primary-btn">+ New playlist</button>
+    <button class="close" onclick="PlaylistUI.closeChooser()">✖</button>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL (existing, unchanged) -->
+<div id="uploadModal" class="modal" hidden>
+  <div class="modal-backdrop" onclick="UI.closeUploadModal()"></div>
+  <div class="modal-body" id="dropZone">
+    <button class="close" onclick="UI.closeUploadModal()">✖</button>
+    <h2>Drag & Drop files / folders</h2>
+    <div class="modal-buttons">
+      <button id="chooseFiles"  class="primary-btn">Select Files</button>
+      <button id="chooseFolder" class="primary-btn">Select Folder</button>
+    </div>
+<input id="fileInputFiles"  type="file" multiple accept="audio/*" hidden>
+<input id="fileInputFolder" type="file" webkitdirectory directory
+       accept="audio/*" hidden>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='utils.js') }}"></script>
+<script src="{{ url_for('static', filename='queue.js') }}"></script>
+<script src="{{ url_for('static', filename='player.js') }}"></script>
+<script src="{{ url_for('static', filename='upload.js') }}"></script>
+<script src="{{ url_for('static', filename='genius.js') }}"></script>
+<script src="{{ url_for('static', filename='settings.js') }}"></script>
+<script src="{{ url_for('static', filename='playlist.js') }}"></script>
+<script src="{{ url_for('static', filename='visualizer.js') }}"></script>
+</body>
+</html>

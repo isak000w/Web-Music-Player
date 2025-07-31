@@ -1,0 +1,152 @@
+/* ─── Responsive table wrapper ─────────────────── */
+.table-responsive{overflow-x:auto;}
+@media (max-width:640px){
+  .track-table th:nth-child(n+4),
+  .track-table td:nth-child(n+4){
+    display:none;
+  }
+}
+
+:root{
+  --ctrl-gap: 8px;
+  --ctrl-pad: 6px 10px;
+}
+
+.controls-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:var(--ctrl-gap);
+}
+
+.controls-grid button{
+  padding:var(--ctrl-pad);
+  border:none;
+  border-radius:4px;
+  background:#eee;
+  cursor:pointer;
+}
+
+button:focus-visible, input:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+.create-playlist-btn{
+  font-size:1.125rem;
+  font-weight:600;
+  padding:10px 16px;
+  border:none;
+  border-radius:8px;
+  background:var(--accent);
+  color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  cursor:pointer;
+}
+.create-playlist-btn:hover{filter:brightness(1.1);}
+.count-badge{
+  display:inline-block;
+  min-width:24px;
+  text-align:center;
+  font-size:.8rem;
+  font-weight:600;
+  background:#444;
+  color:#fff;
+  padding:2px 6px;
+  border-radius:10px;
+}
+/* ─── Theme variables ─────────────────────────────────────────────── */
+:root{
+  --bg:#ffffff; --fg:#111; --sidebar:#f7f7f7; --accent:#1e90ff; --row-hover:#f0f8ff;
+}
+:root.dark{
+  --bg:#1c1c1c; --fg:#e6e6e6; --sidebar:#2b2b2b; --accent:#3c9dff; --row-hover:#24364d;
+}
+
+/* ─── Base layout ─────────────────────────────────────────────────── */
+*{box-sizing:border-box;font-family:sans-serif;}
+body{margin:0;background:var(--bg);color:var(--fg);padding-bottom:72px;}
+
+header{background:var(--sidebar);border-bottom:1px solid #ccc;
+       display:flex;align-items:center;gap:16px;padding:12px 16px;}
+header h1{margin:0;font-size:1.2rem;}
+input{padding:4px 6px;font-size:.9rem;}
+
+.container{display:flex;height:calc(100vh - 120px);}
+aside{width:240px;background:var(--sidebar);padding:16px;border-right:1px solid #ccc;
+      display:flex;flex-direction:column;gap:8px;}
+.main-content{flex:1;padding:16px;overflow-y:auto;}
+
+.primary-btn{width:100%;padding:8px 0;cursor:pointer;}
+
+.cover-placeholder{width:100%;padding-top:100%;background:#ddd;position:relative;}
+.cover-placeholder img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+
+.side-meta{min-height:48px;margin-top:4px;}
+.side-title{font-weight:600;font-size:.95rem;white-space:normal;}
+.side-artist{font-size:.85rem;color:#666;}
+
+.side-controls,.side-toggles{display:flex;gap:8px;margin-top:10px;}
+.play-btn,.toggle-btn{padding:6px 10px;border:none;border-radius:4px;background:#eee;cursor:pointer;}
+.toggle-btn.active{background:var(--accent);color:#fff;}
+
+.queue-box{width:207px;height:400px;overflow-y:auto;background:var(--sidebar);border:1px solid #ddd;padding-right:4px;}
+
+/* ─── Library table ──────────────────────────────────────────────── */
+.track-table{width:100%;border-collapse:collapse;}
+.track-table th,.track-table td{padding:6px 8px;border-bottom:1px solid #ddd;}
+.track-table th{cursor:pointer;background:var(--sidebar);}
+.track-table tbody tr:hover{background:var(--row-hover);}
+.playing td{font-weight:700;}
+.lib-btns button{margin-inline:2px}
+
+/* ─── Footer player bar ──────────────────────────────────────────── */
+footer.playerbar{position:fixed;inset-inline:0;bottom:0;
+  display:flex;align-items:center;gap:12px;padding:6px 10px;
+  background:var(--sidebar);border-top:1px solid #ccc;z-index:4;}
+footer.playerbar input[type=range]{flex:1;}
+.time-display{min-width:110px;font-variant-numeric:tabular-nums;}
+canvas#miniViz{border:none;border-radius:2px;background:transparent;}
+
+/* ─── Upload modal popup ─────────────────────────────────────────── */
+.modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);}
+.modal-body{
+  position:relative;background:var(--sidebar);border:1px solid #ccc;border-radius:6px;
+  padding:24px 32px;box-shadow:0 4px 16px rgba(0,0,0,.35);
+  max-width:420px;width:90%;text-align:center;display:flex;flex-direction:column;gap:18px;}
+.modal-buttons{display:flex;gap:12px;justify-content:center;}
+.modal-body button.primary-btn{width:120px;}
+.modal-body .close{position:absolute;top:6px;right:8px;background:none;border:none;font-size:1.2rem;cursor:pointer;}
+#dropZone.hover{outline:2px dashed var(--accent);}
+[hidden].modal{display:none;}
+
+/* ─── Settings gear drop-up ──────────────────────────────────────── */
+.settings{position:relative;margin:8px 0;}
+#gearBtn{font-size:1.1rem;padding:4px 6px;cursor:pointer}
+.gear-menu{
+  position:absolute;bottom:100%;right:0;background:var(--sidebar);
+  border:1px solid #ccc;border-radius:4px;box-shadow:0 3px 8px rgba(0,0,0,.3);
+  padding:8px;display:none;flex-direction:column;gap:6px;}
+.gear-menu.open{display:flex}
+.gear-menu button{width:140px;cursor:pointer}
+#speedPanel{display:none;flex-direction:column;gap:4px;padding-top:4px;border-top:1px solid #bbb}
+#speedPanel.open{display:flex}
+#speedPanel label{display:flex;flex-direction:column;font-size:.9rem;gap:4px}
+#speedPanel input[type=range]{width:140px}
+
+/* ─── Playlists layout ──────────────────────────────────────────── */
+.pl-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+.pl-row span{flex:1}
+.pl-row button{padding:2px 6px}
+.playlist-list{margin:12px 0 8px;max-height:300px;overflow:auto;border:1px solid #ccc;padding:6px}
+
+/* chooser modal */
+.choose-body{
+  width:220px;background:var(--sidebar);padding:10px;border-radius:6px;
+  display:flex;flex-direction:column;gap:10px}
+.choose-list{max-height:120px;overflow:auto;margin:2px 0;border:1px solid #ccc;padding:4px}
+.choose-list div{padding:4px;cursor:pointer}
+.choose-list div:hover{background:#eee}
+
+/* keep Library & Playlist tabs obvious */
+nav button.active{background:#000;color:#fff}
