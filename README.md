@@ -12,7 +12,7 @@ A self-hosted Flask application that lets you upload, scan, catalog, and play lo
 ## Setup
 
 ```bash
-git clone <repo-url>
+git clone **https://github.com/isak000w/Web-Music-Player**
 cd music-catalog-player
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
